@@ -1,0 +1,13 @@
+=== QEMU HVF TEST ===
+
+CPU:
+Apple M1 (Virtual)
+
+QEMU version:
+QEMU emulator version 10.2.1
+Copyright (c) 2003-2025 Fabrice Bellard and the QEMU Project developers
+
+Running HVF test...
+qemu-system-aarch64: -accel hvf: Error: ret = HV_UNSUPPORTED (0xfae9400f, at ../target/arm/hvf/hvf.c:843)
+
+If HVF works you will see hvf accelerator initialized.
