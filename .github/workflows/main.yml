@@ -1,4 +1,4 @@
-name: qemu-hvf-test
+name: mac-gpu-info
 
 on:
   workflow_dispatch:
@@ -7,47 +7,32 @@ permissions:
   contents: write
 
 jobs:
-  test:
-    runs-on: macos-latest
+  gpu:
+    runs-on: macos-15-intel
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install QEMU
+      - name: Collect GPU info
         run: |
-          brew update
-          brew install qemu
-
-      - name: Test HVF with QEMU ARM
-        run: |
-          FILE=hvf_test.txt
-          echo "=== QEMU HVF TEST ===" > $FILE
+          FILE=gpu_info.txt
+          echo "=== GPU INFO ===" > $FILE
           echo "" >> $FILE
 
-          echo "CPU:" >> $FILE
-          sysctl -n machdep.cpu.brand_string 2>/dev/null >> $FILE || echo "Apple Silicon" >> $FILE
+          echo "=== system_profiler ===" >> $FILE
+          system_profiler SPDisplaysDataType >> $FILE
           echo "" >> $FILE
 
-          echo "QEMU version:" >> $FILE
-          qemu-system-aarch64 --version >> $FILE
+          echo "=== ioreg GPU ===" >> $FILE
+          ioreg -l | grep -i "gpu" >> $FILE || true
           echo "" >> $FILE
 
-          echo "Running HVF test..." >> $FILE
-          qemu-system-aarch64 \
-            -machine virt \
-            -accel hvf \
-            -cpu host \
-            -m 512 \
-            -nographic \
-            -S \
-            2>> $FILE || true
-
-          echo "" >> $FILE
-          echo "If HVF works you will see hvf accelerator initialized." >> $FILE
+          echo "=== PCI devices ===" >> $FILE
+          system_profiler SPPCIDataType >> $FILE
 
       - name: Commit result
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add hvf_test.txt
-          git commit -m "hvf test result [skip ci]" || echo "no changes"
+          git add gpu_info.txt
+          git commit -m "gpu info [skip ci]" || echo "no changes"
           git push
